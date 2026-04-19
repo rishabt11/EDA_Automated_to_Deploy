@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Engineer Pro & AI Chat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="upload-screen" class="screen active">
+        <div class="upload-container glass-panel">
+            <h1>Data Engineer Pro</h1>
+            <p>Upload a CSV/Excel file and provide the business context. Our AI will automatically audit, analyze, and prepare your data for machine learning.</p>
+            
+            <form id="upload-form">
+                <div class="form-group">
+                    <label for="dataset">Target Dataset (CSV/XLSX)</label>
+                    <input type="file" id="dataset" accept=".csv, .xlsx, .xls">
+                </div>
+                
+                <div class="form-group">
+                    <label for="context">Business Context / Problem Statement</label>
+                    <textarea id="context" placeholder="E.g. This is a dataset of customer purchases. We want to predict who will churn next month." rows="3"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" id="upload-btn">🚀 Analyze & Audit Data</button>
+                    <button type="button" id="demo-btn" class="secondary-btn">🎁 Generate Demo Data</button>
+                </div>
+            </form>
+            <div id="upload-status" class="hidden">Uploading and running Pandas profiling...</div>
+        </div>
+    </div>
+
+    <div id="dashboard-screen" class="screen hidden">
+        <header>
+            <h2>📊 Data Engineering Platform</h2>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button id="theme-toggle-btn" class="secondary-btn" title="Toggle Light/Dark Mode">☀️ Light Mode</button>
+                <button id="export-pdf-btn" class="secondary-btn" title="Export to PDF" style="display: flex; align-items: center; gap: 5px;">📄 Export Report</button>
+                <button id="auto-clean-btn" class="action-btn hidden">✨ Auto-Clean Dataset</button>
+                <a id="download-clean-btn" class="action-btn hidden" style="text-decoration:none; display:inline-flex; align-items:center; padding: 0.85rem 1.5rem; border-radius:8px; font-weight:600; color:white;">📥 Download ML-Ready CSV</a>
+                <button id="new-dataset-btn" class="secondary-btn">Upload New Dataset</button>
+            </div>
+        </header>
+        
+        <div class="dashboard-layout">
+            <!-- Left Panel: Tabs & Data -->
+            <div class="data-panel">
+                <div class="tabs">
+                    <button class="tab-btn active" data-target="tab-audit">🚨 Audit & Preprocessing</button>
+                    <button class="tab-btn" data-target="tab-visuals">📊 Distributions</button>
+                    <button class="tab-btn" data-target="tab-scatter">🔍 Deep Insights</button>
+                    <button class="tab-btn" data-target="tab-pca">🎯 PCA & Correlation</button>
+                    <button class="tab-btn" data-target="tab-automl">🧠 Auto-ML Generator</button>
+                    <button class="tab-btn" data-target="tab-spark">⚡ Spark Operations</button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Tab: Audit & Preprocessing -->
+                    <div id="tab-audit" class="tab-pane active">
+                        
+                        <div class="scorecard">
+                            <div class="score-box">
+                                <div style="color:var(--text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em;">Total Rows</div>
+                                <div class="score-value" id="score-rows">-</div>
+                            </div>
+                            <div class="score-box">
+                                <div style="color:var(--text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em;">Missing Values</div>
+                                <div class="score-value" id="score-missing">-</div>
+                            </div>
+                            <div class="score-box">
+                                <div style="color:var(--text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em;">Highly Skewed Columns</div>
+                                <div class="score-value" id="score-skew">-</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Data Quality Audit</h3>
+                            <table id="audit-table">
+                                <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th>Issue Detected</th>
+                                        <th>Severity</th>
+                                        <th>Recommended Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>🛠️ Interactive Transformation Studio</h3>
+                            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:1rem;">Manually engineer features. The dataset and visualizations will update instantly.</p>
+                            <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Select Column</label>
+                                    <select id="transform-col"></select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Mathematical Operation</label>
+                                    <select id="transform-type">
+                                        <optgroup label="Imputation">
+                                            <option value="fill_mean">Fill Missing (Mean)</option>
+                                            <option value="fill_median">Fill Missing (Median)</option>
+                                            <option value="fill_mode">Fill Missing (Mode)</option>
+                                        </optgroup>
+                                        <optgroup label="Scaling">
+                                            <option value="standard_scale">Standard Scaler</option>
+                                            <option value="minmax_scale">Min-Max Scaler</option>
+                                        </optgroup>
+                                        <optgroup label="Advanced & Mathematics">
+                                            <option value="log">Log Transformation (Log1p)</option>
+                                            <option value="sqrt">Square Root</option>
+                                            <option value="square">Square</option>
+                                            <option value="abs">Absolute Value</option>
+                                            <option value="reciprocal">Reciprocal (1/x)</option>
+                                            <option value="cap_outliers_iqr">Cap Outliers (IQR)</option>
+                                            <option value="binning_5">Equal-Width Binning (5 Bins)</option>
+                                            <option value="label_encode">Label Encoding (Ordinal)</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div style="display: flex; align-items: flex-end; padding-bottom: 1.5rem;">
+                                    <button id="apply-transform-btn" style="width: auto;">Apply to Data</button>
+                                </div>
+                            </div>
+                            <div id="transform-msg" style="font-weight: 500;"></div>
+                        </div>
+
+                        <div class="card">
+                            <h3>⚙️ ML Preprocessing (Auto-Encoded)</h3>
+                            <div id="encoding-log" class="markdown-container" style="margin-bottom:1.5rem;"></div>
+                            <h4 style="margin-bottom:0.75rem; color:#cbd5e1;">Preview (Top 5 rows):</h4>
+                            <div class="table-responsive">
+                                <table id="preview-table">
+                                    <thead><tr></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Visuals -->
+                    <div id="tab-visuals" class="tab-pane">
+                        <div class="card" style="background:transparent; border:none; box-shadow:none; padding:0;">
+                            <div id="visuals-grid" class="visuals-grid"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Custom Chart -->
+                    <div id="tab-scatter" class="tab-pane">
+                        <div class="card">
+                            <h3>Advanced Visualization Hub</h3>
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Chart Type</label>
+                                    <select id="chart-type">
+                                        <option value="scatter">Scatter Plot</option>
+                                        <option value="line">Line Chart</option>
+                                        <option value="bar">Bar Chart</option>
+                                        <option value="box">Box Plot</option>
+                                        <option value="violin">Violin Plot</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>X-Axis (Numeric)</label>
+                                    <select id="scatter-x"></select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Y-Axis (Numeric)</label>
+                                    <select id="scatter-y"></select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Color By (Categorical)</label>
+                                    <select id="scatter-hue"><option value="">None</option></select>
+                                </div>
+                            </div>
+                            <div class="form-group" id="reg-toggle-container" style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="scatter-reg" style="width: auto;">
+                                <label for="scatter-reg" style="margin: 0;">Add Regression Trend Line</label>
+                            </div>
+                            <button id="plot-chart-btn" style="width: auto;">Generate Chart</button>
+                            <div id="scatter-output" style="margin-top: 20px; text-align: center;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: PCA & Correlation -->
+                    <div id="tab-pca" class="tab-pane">
+                        <div class="card">
+                            <h3>Dimensionality Reduction (PCA)</h3>
+                            <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Color Clusters By</label>
+                                    <select id="pca-hue"><option value="">None</option></select>
+                                </div>
+                                <button id="run-pca-btn" style="flex: 1; height: 45px; margin-bottom: 1.5rem;">Run PCA Analysis</button>
+                            </div>
+                            <div id="pca-msg" style="margin-bottom: 10px;"></div>
+                            <div id="pca-output" style="text-align: center;"></div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Correlation Heatmap</h3>
+                            <div id="corr-output" style="text-align: center;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab: Auto-ML -->
+                    <div id="tab-automl" class="tab-pane">
+                        <div class="card">
+                            <h3>🤖 Baseline ML Model Generator</h3>
+                            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                                Automatically generate a production-ready Python script utilizing `scikit-learn` tailored to your dataset.
+                            </p>
+                            <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Select Target Column to Predict</label>
+                                    <select id="automl-target"></select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Model Type</label>
+                                    <select id="automl-type">
+                                        <option value="classification">Classification (Categories/Boolean)</option>
+                                        <option value="regression">Regression (Continuous Numbers)</option>
+                                    </select>
+                                </div>
+                                <button id="generate-automl-btn" class="action-btn" style="flex: 1; height: 45px; margin-bottom: 1.5rem;">⚙️ Generate Script</button>
+                            </div>
+                            <div id="automl-msg" style="margin-bottom: 10px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab: Spark Operations -->
+                    <div id="tab-spark" class="tab-pane">
+                        
+                        <!-- Spark Status Banner -->
+                        <div id="spark-status-banner" class="card" style="text-align:center; padding: 1rem;">
+                            <span id="spark-status-text" style="font-weight:600;">Checking PySpark availability...</span>
+                        </div>
+                        
+                        <!-- Section: Describe & Schema -->
+                        <div class="card">
+                            <h3>📝 Descriptive Statistics (describe / summary)</h3>
+                            <p style="color:var(--text-muted); margin-bottom:1rem;">Run PySpark’s describe() and summary() for mean, stddev, min, max, and percentiles.</p>
+                            <button id="spark-describe-btn" class="action-btn" style="width:auto;">Run describe() + summary()</button>
+                            <div id="spark-describe-output" style="margin-top:15px; overflow-x:auto;"></div>
+                        </div>
+                        
+                        <!-- Section: Transformations -->
+                        <div class="card">
+                            <h3>🔧 Spark Transformations (withColumn / filter / dropna)</h3>
+                            <div style="display:flex; gap:15px; margin-bottom:10px;">
+                                <div class="form-group" style="flex:1;">
+                                    <label>Column</label>
+                                    <select id="spark-transform-col"></select>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label>Operation</label>
+                                    <select id="spark-transform-type">
+                                        <optgroup label="Column Operations">
+                                            <option value="log">Log Transform (log1p)</option>
+                                            <option value="sqrt">Square Root (sqrt)</option>
+                                            <option value="square">Square (pow)</option>
+                                            <option value="abs">Absolute Value (abs)</option>
+                                            <option value="reciprocal">Reciprocal (1/x)</option>
+                                        </optgroup>
+                                        <optgroup label="Scaling">
+                                            <option value="standard_scale">Standard Scaler</option>
+                                            <option value="minmax_scale">Min-Max Scaler</option>
+                                        </optgroup>
+                                        <optgroup label="Cleaning">
+                                            <option value="fill_mean">fillna (Mean)</option>
+                                            <option value="fill_median">fillna (Median)</option>
+                                            <option value="fill_mode">fillna (Mode)</option>
+                                            <option value="cap_outliers_iqr">Cap Outliers (IQR)</option>
+                                            <option value="drop_nulls">dropna (Column)</option>
+                                            <option value="drop_duplicates">dropDuplicates</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div style="display:flex; align-items:flex-end; padding-bottom:1.5rem;">
+                                    <button id="spark-transform-btn" style="width:auto;">Apply via Spark</button>
+                                </div>
+                            </div>
+                            <div id="spark-transform-msg" style="font-weight:500;"></div>
+                        </div>
+
+                        <!-- Section: Filter -->
+                        <div class="card">
+                            <h3>🔍 Filter Rows (filter / where)</h3>
+                            <div style="display:flex; gap:15px; margin-bottom:10px;">
+                                <div class="form-group" style="flex:1;">
+                                    <label>Column</label>
+                                    <select id="spark-filter-col"></select>
+                                </div>
+                                <div class="form-group" style="flex:0.5;">
+                                    <label>Operator</label>
+                                    <select id="spark-filter-op">
+                                        <option value=">">&gt;</option>
+                                        <option value="<">&lt;</option>
+                                        <option value=">=">&gt;=</option>
+                                        <option value="<=">&lt;=</option>
+                                        <option value="==">==</option>
+                                        <option value="!=">!=</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label>Value</label>
+                                    <input type="text" id="spark-filter-value" placeholder="e.g. 100 or 'Tech'" style="background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:var(--text-main); padding:0.7rem; border-radius:8px;">
+                                </div>
+                                <div style="display:flex; align-items:flex-end; padding-bottom:1.5rem;">
+                                    <button id="spark-filter-btn" style="width:auto;">Filter</button>
+                                </div>
+                            </div>
+                            <div id="spark-filter-output" style="overflow-x:auto;"></div>
+                        </div>
+
+                        <!-- Section: GroupBy -->
+                        <div class="card">
+                            <h3>📊 GroupBy & Aggregation (groupBy / agg)</h3>
+                            <div style="display:flex; gap:15px; margin-bottom:10px;">
+                                <div class="form-group" style="flex:1;">
+                                    <label>Group By Column</label>
+                                    <select id="spark-group-col"></select>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label>Aggregate Column</label>
+                                    <select id="spark-agg-col"></select>
+                                </div>
+                                <div class="form-group" style="flex:0.7;">
+                                    <label>Function</label>
+                                    <select id="spark-agg-func">
+                                        <option value="sum">sum()</option>
+                                        <option value="avg">avg()</option>
+                                        <option value="count">count()</option>
+                                        <option value="min">min()</option>
+                                        <option value="max">max()</option>
+                                        <option value="stddev">stddev()</option>
+                                    </select>
+                                </div>
+                                <div style="display:flex; align-items:flex-end; padding-bottom:1.5rem;">
+                                    <button id="spark-groupby-btn" style="width:auto;">Run</button>
+                                </div>
+                            </div>
+                            <div id="spark-groupby-output" style="overflow-x:auto;"></div>
+                        </div>
+
+                        <!-- Section: Window Functions -->
+                        <div class="card">
+                            <h3>🧱 Window Functions (rank / row_number / lag / lead)</h3>
+                            <div style="display:flex; gap:15px; margin-bottom:10px; flex-wrap:wrap;">
+                                <div class="form-group" style="flex:1; min-width:150px;">
+                                    <label>Partition By</label>
+                                    <select id="spark-win-partition"></select>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:150px;">
+                                    <label>Order By</label>
+                                    <select id="spark-win-order"></select>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:150px;">
+                                    <label>Function</label>
+                                    <select id="spark-win-func">
+                                        <option value="row_number">row_number()</option>
+                                        <option value="rank">rank()</option>
+                                        <option value="dense_rank">dense_rank()</option>
+                                        <option value="lag">lag()</option>
+                                        <option value="lead">lead()</option>
+                                        <option value="cumsum">Running Total (cumsum)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1; min-width:150px;">
+                                    <label>Target Column (for lag/lead/cumsum)</label>
+                                    <select id="spark-win-target"></select>
+                                </div>
+                                <div style="display:flex; align-items:flex-end; padding-bottom:1.5rem;">
+                                    <button id="spark-window-btn" style="width:auto;">Apply</button>
+                                </div>
+                            </div>
+                            <div id="spark-window-output" style="overflow-x:auto;"></div>
+                        </div>
+
+                        <!-- Section: Sorting -->
+                        <div class="card">
+                            <h3>↕️ Sort Data (orderBy / sort)</h3>
+                            <div style="display:flex; gap:15px; margin-bottom:10px;">
+                                <div class="form-group" style="flex:1;">
+                                    <label>Sort Column</label>
+                                    <select id="spark-sort-col"></select>
+                                </div>
+                                <div class="form-group" style="flex:0.7;">
+                                    <label>Direction</label>
+                                    <select id="spark-sort-dir">
+                                        <option value="asc">Ascending ↑</option>
+                                        <option value="desc">Descending ↓</option>
+                                    </select>
+                                </div>
+                                <div style="display:flex; align-items:flex-end; padding-bottom:1.5rem;">
+                                    <button id="spark-sort-btn" style="width:auto;">Sort</button>
+                                </div>
+                            </div>
+                            <div id="spark-sort-output" style="overflow-x:auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resizer Handle -->
+            <div class="resizer" id="dragMe"></div>
+
+            <!-- Right Panel: Chatbot -->
+            <div class="chat-panel">
+                <div class="chat-header">
+                    <h3>🤖 AI Data Analyst</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">Powered by Groq AI</p>
+                </div>
+                <div id="chat-history" class="chat-history">
+                    <!-- AI Stream goes here -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Ask about trends, outliers, or ML models...">
+                    <button id="send-chat-btn">Send</button>
+                    <button id="stop-chat-btn" class="hidden" style="background-color: var(--danger); margin-left: 0.25rem;" title="Stop Generating">🛑 Stop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

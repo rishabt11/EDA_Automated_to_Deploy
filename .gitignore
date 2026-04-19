@@ -1,0 +1,8 @@
+venv/
+sessions/
+uploads/
+__pycache__/
+*.pyc
+.env
+ml_ready_dataset.csv
+*.parquet

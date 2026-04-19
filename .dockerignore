@@ -1,0 +1,8 @@
+venv/
+sessions/
+uploads/
+__pycache__/
+*.pyc
+.env
+.git/
+*.md
