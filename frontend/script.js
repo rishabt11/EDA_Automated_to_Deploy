@@ -189,7 +189,7 @@ document.addEventListener('mouseup', () => {
 async function processUpload(formData) {
     uploadStatus.classList.remove('hidden');
     uploadStatus.style.color = 'var(--success)';
-    uploadStatus.textContent = 'Uploading and running Pandas profiling...';
+    uploadStatus.textContent = 'Uploading and running Polars EDA analysis...';
     
     try {
         const response = await fetch(`${API_BASE}/upload`, {
