@@ -8,3 +8,11 @@ __pycache__/
 !.env.example
 ml_ready_dataset.csv
 *.parquet
+
+# Personal study notes (local only, not part of the app)
+INTERVIEW_GUIDE_*.md
+CODE_DOCUMENTATION.md
+CONTEXT_SUMMARY.md
+FUTURE_ROADMAP.md
+HOW_TO_USE.md
+hackathon_used_code.py
