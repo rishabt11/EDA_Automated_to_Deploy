@@ -211,7 +211,7 @@ async function processUpload(formData) {
         
         // Trigger AI Report Stream
         streamInitialReport();
-        checkSparkStatus();
+        // checkSparkStatus(); — Spark tab removed (PySpark too heavy for cloud)
         
     } catch (err) {
         uploadStatus.textContent = `Error: ${err.message}`;
