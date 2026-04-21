@@ -53,7 +53,7 @@
                     <button class="tab-btn" data-target="tab-scatter">🔍 Deep Insights</button>
                     <button class="tab-btn" data-target="tab-pca">🎯 PCA & Correlation</button>
                     <button class="tab-btn" data-target="tab-automl">🧠 Auto-ML Generator</button>
-                    <button class="tab-btn" data-target="tab-spark">⚡ Spark Operations</button>
+
                 </div>
 
                 <div class="tab-content">
@@ -232,8 +232,8 @@
                         </div>
                     </div>
                     
-                    <!-- Tab: Spark Operations -->
-                    <div id="tab-spark" class="tab-pane">
+                    <!-- Spark Operations tab removed: PySpark requires Java JVM, too heavy for Render free tier -->
+                    <div id="tab-spark" class="tab-pane" style="display:none;">
                         
                         <!-- Spark Status Banner -->
                         <div id="spark-status-banner" class="card" style="text-align:center; padding: 1rem;">
