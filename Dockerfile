@@ -2,11 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies (curl needed for health check)
+# Install system dependencies (curl for healthcheck, Java for PySpark)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
+    default-jre-headless \
     && rm -rf /var/lib/apt/lists/*
+
+# Java home for PySpark
+ENV JAVA_HOME=/usr/lib/jvm/default-java
 
 # Matplotlib: use non-interactive backend (no display server in container)
 ENV MPLBACKEND=Agg
