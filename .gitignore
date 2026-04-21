@@ -4,5 +4,7 @@ uploads/
 __pycache__/
 *.pyc
 .env
+.env.*
+!.env.example
 ml_ready_dataset.csv
 *.parquet

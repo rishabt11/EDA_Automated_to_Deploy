@@ -8,6 +8,13 @@ import os
 import json
 import polars as pl
 
+# Load .env for local development
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").lower()
 
 # --- Groq Setup ---

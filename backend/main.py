@@ -1,7 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Path, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse, FileResponse, HTMLResponse
 from pydantic import BaseModel
 import polars as pl
 import io
@@ -9,6 +8,15 @@ import json
 import os
 import uuid
 import re
+import time
+from pathlib import Path as FilePath
+
+# Load .env for local development (ignored in Docker where env vars are set directly)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not required in production
 
 from backend.eda_engine import perform_analysis, advanced_preprocessing, generate_custom_chart_base64, generate_pca_base64, create_synthetic_dataset, auto_clean_dataset, apply_custom_transformation, generate_single_distribution
 from backend.ai_engine import generate_initial_report, chat_with_data
@@ -145,7 +153,7 @@ async def chat(req: ChatRequest):
     if not req.session_id: raise HTTPException(status_code=400, detail="Missing session_id")
     meta, df = get_session(req.session_id)
     return StreamingResponse(
-        chat_with_data(req.message, req.history, df),
+        chat_with_data(req.message, req.history, meta["context"], df),
         media_type="text/event-stream"
     )
 
@@ -536,6 +544,37 @@ async def spark_sort(req: SparkSortRequest):
     preview = get_preview(sorted_sdf, 15)
     return {"result": preview, "message": f"Sorted by {req.column} ({'ASC' if req.ascending else 'DESC'})"}
 
-# Mount frontend at the end to avoid blocking /api routes
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+# ── Serve frontend with no-cache + timestamp injection ───────────────────────
+FRONTEND_DIR = FilePath(__file__).resolve().parent.parent / "frontend"
+
+@app.get("/")
+async def serve_index():
+    """Serve index.html with unique timestamp in script/CSS URLs to bust cache."""
+    raw = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
+    ts = int(time.time() * 1000)
+    # Inject timestamp into script + css URLs
+    import re as _re
+    raw = _re.sub(r'(script\.js)(\?[^"]*)?', f'script.js?t={ts}', raw)
+    raw = _re.sub(r'(style\.css)(\?[^"]*)?', f'style.css?t={ts}', raw)
+    return HTMLResponse(
+        content=raw,
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+        }
+    )
+
+@app.get("/{filename:path}")
+async def serve_static(filename: str):
+    """Serve static frontend files with no-cache headers."""
+    file_path = FRONTEND_DIR / filename
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(
+        file_path,
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+        }
+    )
 
